@@ -1,0 +1,35 @@
+version: '3.7'
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: bulletin_board
+      POSTGRES_USER: your_user
+      POSTGRES_PASSWORD: your_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./bulletin-board-backend
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: your_user
+      DATABASE_PASSWORD: your_password
+      DATABASE_NAME: bulletin_board
+
+  frontend:
+    build: ./bulletin-board
+    ports:
+      - '3001:3000'
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
