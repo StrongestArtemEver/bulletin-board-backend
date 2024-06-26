@@ -2,17 +2,23 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import redisConfig from './redis.config';
 
 @Module({
   imports: [
-    CacheModule.register({
-      host: 'localhost',
-      port: 6379,
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [redisConfig],
+    }),
+    CacheModule.registerAsync({
+      useFactory: async (configService: ConfigService) => ({
+        store: 'redis',
+        host: configService.get<string>('redis.host'),
+        port: configService.get<number>('redis.port'),
+      }),
+      inject: [ConfigService],
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
